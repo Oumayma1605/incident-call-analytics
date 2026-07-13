@@ -1,0 +1,15 @@
+# Raw exports are never committed — they contain data that must stay local
+data/raw/*
+!data/raw/.gitkeep
+
+# Anonymization mapping must never leave this machine
+*_codebook.csv
+*_mapping.csv
+
+# Notebook / Python noise
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+.DS_Store
+.venv/
+venv/

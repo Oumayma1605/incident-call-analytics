@@ -1,0 +1,70 @@
+// =========================================================
+// DAX measures for the Incident & Call Analytics dashboard
+// Paste each measure into Power BI: Modeling > New Measure
+// Assumes the incidents table is named 'Incidents' and
+// the calls table is named 'Calls'
+// =========================================================
+
+// ---- Volume ----
+Total Incidents = COUNTROWS(Incidents)
+
+Total Calls = COUNTROWS(Calls)
+
+Incidents Previous Month =
+CALCULATE([Total Incidents], DATEADD('dim_date'[date], -1, MONTH))
+
+Incident Volume Growth % =
+DIVIDE([Total Incidents] - [Incidents Previous Month], [Incidents Previous Month])
+
+// ---- Resolution performance ----
+First Call Resolution Rate =
+DIVIDE(
+    CALCULATE(COUNTROWS(Incidents), Incidents[first_call_resolution] = TRUE),
+    [Total Incidents]
+)
+
+Reopen Rate =
+DIVIDE(
+    CALCULATE(COUNTROWS(Incidents), Incidents[reopen_count] > 0),
+    [Total Incidents]
+)
+
+Resolved Ticket Share =
+DIVIDE(
+    CALCULATE(COUNTROWS(Incidents), NOT(ISBLANK(Incidents[resolved_at]))),
+    [Total Incidents]
+)
+
+Median Resolution Time (hours) =
+MEDIANX(Incidents, Incidents[resolution_time_hours])
+
+Avg Resolution Time (hours) =
+AVERAGE(Incidents[resolution_time_hours])
+
+Median Resolution Time — FCR =
+CALCULATE(
+    MEDIANX(Incidents, Incidents[resolution_time_hours]),
+    Incidents[first_call_resolution] = TRUE
+)
+
+Median Resolution Time — Non FCR =
+CALCULATE(
+    MEDIANX(Incidents, Incidents[resolution_time_hours]),
+    Incidents[first_call_resolution] = FALSE
+)
+
+// ---- Workload ----
+Avg Reassignment Count = AVERAGE(Incidents[reassignment_count])
+
+Incidents per Agent =
+DIVIDE([Total Incidents], DISTINCTCOUNT(Incidents[assigned_to]))
+
+// ---- Calls ----
+Outbound Call Share =
+DIVIDE(
+    CALCULATE(COUNTROWS(Calls), SEARCH("Outbound", Calls[call_direction], 1, 0) > 0),
+    [Total Calls]
+)
+
+Calls per Incident =
+DIVIDE([Total Calls], [Total Incidents])
